@@ -1,0 +1,28 @@
+﻿<Window x:Class="BarCodeDescrExpirDate_Txt2Excel.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SerialNumAndExpirDate_Txt2Excel"
+        mc:Ignorable="d"
+        Title="ExtractFromTxt by feduss - v1.0.0" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <Label Grid.Row="0" Content="Benvenuto! Quest'app è stata sviluppata per estrarre codice a barre, descrizione di un prodotto e relativa scadenza da un particolare file txt."/>
+        <Label Grid.Row="1" Content="I dati ottenuti verranno quindi convertiti in un file excel, per una più facile visualizzazione."/>
+        <Label Grid.Row="2" Content="E' importante che i dati nel file txt siano separati da un punto e virgola."/>
+        <Label Grid.Row="3" Content="Il codice a barre dev'essere in 1° posizione, la descrizione in 3° e la scadenza in 5°, altrimenti il programma non funzionerà correttamente."/>
+        <Label Grid.Row="4" Content="Clicca sul pulsante seguente per selezionare un file txt ed iniziare il processo di conversione:"/>
+        <Button Grid.Row="5" Content="SELEZIONA FILE TXT" Width="150" Margin="10" Padding="10" Click="Button_Click"/>
+        <Label x:Name="StatusLabel_" Grid.Row="6" Content="Stato: in attesa di un file." HorizontalContentAlignment="Center"/>
+    </Grid>
+</Window>
