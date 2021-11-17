@@ -1,6 +1,7 @@
 ﻿using SwiftExcel;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -24,35 +25,71 @@ namespace BarCodeDescrExpirDate_Txt2Excel
             if(FileStream != null)
             {
                 StatusLabel.Content = "Status: lettura dati...";
-                IList<String> contents = new List<String>();
-                //Read the txt line by line
-                using (var sr = new StreamReader(FileStream))
-                {
-                    while (!sr.EndOfStream)
-                    {
-                        try
-                        {
-                            String line = sr.ReadLine();
-                            if(line != null)
-                            {
-                                contents.Add(line);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            PrintError(ex);
-                        }
-                    }
-                }
-                //Convert the lines into a list of RowItem
-                IList<RowItem> Rows = GetDatas(contents);
+                List<String> contents = ReadLines(FileStream);
+                //Convert the lines into a list of RowItem and sort them
+                StatusLabel.Content = "Status: ordinamento dati...";
+                List<RowItem> Rows = SortDatas(GetDatas(contents));
                 StatusLabel.Content = "Status: inserimento dati (0%)...";
                 //Create the excel file
                 CreateExcelFile(Rows, FileName.Replace(".txt", ".xlsx"));
             }
         }
 
-        private void CreateExcelFile(IList<RowItem> rows, String FileName)
+
+        private Stream SelectFile()
+        {
+            // Configure open file dialog box
+            Microsoft.Win32.OpenFileDialog dlg = new()
+            {
+                DefaultExt = ".txt", // Default file extension
+                Filter = "Text documents (.txt)|*.txt" // Filter files by extension
+            };
+
+            // Show open file dialog box
+            Nullable<bool> result = dlg.ShowDialog();
+            if (result == true)
+            {
+                StatusLabel.Content = "Stato: elaborazione file " + dlg.FileName;
+                this.FileName = dlg.FileName;
+                return dlg.OpenFile();
+            }
+            else
+            {
+                StatusLabel.Content = "Operazione annullata/fallita";
+
+                return null;
+            }
+        }
+
+        private List<String> ReadLines(Stream FileStream)
+        {
+            List<String> contents = new List<string>();
+            var sr = new StreamReader(FileStream);
+            while (!sr.EndOfStream)
+            {
+                try
+                {
+                    String line = sr.ReadLine();
+                    if (line != null)
+                    {
+                        contents.Add(line);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    PrintError(ex);
+                }
+            }
+            return contents;
+        }
+
+        private List<RowItem> SortDatas(List<RowItem> RowItems)
+        {
+            RowItems.Sort();
+            return RowItems;
+        }
+
+        private void CreateExcelFile(List<RowItem> rows, String FileName)
         {
             try
             {
@@ -60,7 +97,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
                 var sheet = new Sheet
                 {
                     Name = "Prodotti",
-                    ColumnsWidth = new List<double> { 10, 50, 70, 10 }
+                    ColumnsWidth = new List<double> { 10, 60, 70, 10 }
                 };
 
                 var ew = new ExcelWriter(FileName, sheet);
@@ -99,12 +136,15 @@ namespace BarCodeDescrExpirDate_Txt2Excel
             errorMessage = String.Concat(errorMessage, " Line: ");
             errorMessage = String.Concat(errorMessage, ex.Source);
 
-            StatusLabel.Content = "Status: si è verificato un errore: " + errorMessage;
+            StatusLabel.Content = "Status: si è verificato un errore.";
+            MessageBox.Show(errorMessage);
         }
 
-        private static IList<RowItem> GetDatas(IList<string> contents)
+        private static List<RowItem> GetDatas(List<string> contents)
         {
-            IList<RowItem> Rows = new List<RowItem>(); 
+            List<RowItem> Rows = new List<RowItem>();
+            CultureInfo cultureInfo = new CultureInfo("it-IT");
+            int i = 0;
             foreach(String Row in contents)
             {
                 String[] Cols = Row.Split(";");
@@ -117,6 +157,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
                         String Day = Cols[4].Substring(0, 2);
                         String Month = Cols[4].Substring(2, 2);
                         String Year = Cols[4].Substring(4, 2);
+                        DateTime FormattedExpiration = DateTime.ParseExact(Cols[4], "ddMMyy", cultureInfo);
 
                         switch (Month)
                         {
@@ -131,45 +172,17 @@ namespace BarCodeDescrExpirDate_Txt2Excel
                             case "09": Month = "Settembre"; break;
                             case "10": Month = "Ottobre"; break;
                             case "11": Month = "Novembre"; break;
-                            case "12": Month = "Dicemebre"; break;
+                            case "12": Month = "Dicembre"; break;
                         }
 
-                        Rows.Add(new RowItem(Cols[0], Cols[2], Day + " " + Month + " " + Year));
+                        Rows.Add(new RowItem(i, Cols[0], Cols[2], Day + " " + Month + " " + Year, FormattedExpiration));
                     }
-                    else
-                    {
-
-                        Rows.Add(new RowItem(Cols[0], Cols[2], Cols[4]));
-                    }
+                    i++;
                 }
             }
 
             return Rows;
         }
 
-        private Stream SelectFile()
-        {
-            // Configure open file dialog box
-            Microsoft.Win32.OpenFileDialog dlg = new()
-            {
-                DefaultExt = ".txt", // Default file extension
-                Filter = "Text documents (.txt)|*.txt" // Filter files by extension
-            };
-
-            // Show open file dialog box
-            Nullable<bool> result = dlg.ShowDialog();
-            if (result == true)
-            {
-                StatusLabel.Content = "Stato: elaborazione file " + dlg.FileName;
-                this.FileName = dlg.FileName;
-                return dlg.OpenFile();
-            }
-            else
-            {
-                StatusLabel.Content = "Operazione annullata/fallita";
-
-                return null;
-            }
-        }
     }
 }

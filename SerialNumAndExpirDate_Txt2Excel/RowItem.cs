@@ -1,22 +1,71 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BarCodeDescrExpirDate_Txt2Excel
 {
-    internal class RowItem
+    internal class RowItem : IEquatable<RowItem>, IComparable<RowItem>
     {
+        public int Id { get; set; }
         public String BarCode { get; set; }
         public String Description { get; set; }
         public String Expiration { get; set; }
+        public DateTime FormattedExpiration { get; set; }
 
-        public RowItem(string BarCode, string Description, string Expiration)
+        public RowItem(int Id, string BarCode, string Description, string Expiration, DateTime FormattedExpiration)
         {
+            this.Id = Id;
             this.BarCode = BarCode;
             this.Description = Description;
             this.Expiration = Expiration;
+            this.FormattedExpiration = FormattedExpiration;
+        }
+
+
+        public bool Equals(RowItem OtherRowItem)
+        {
+            if (this.BarCode.Equals(OtherRowItem.BarCode) &&
+                   this.Description.Equals(OtherRowItem.Description) &&
+                   this.Expiration.Equals(OtherRowItem.Expiration) &&
+                   this.FormattedExpiration.Equals(OtherRowItem.FormattedExpiration))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public override bool Equals(Object Other)
+        {
+            if (Other == null)
+            {
+                return false;
+            }
+            RowItem OtherRowItem = Other as RowItem;
+            if (OtherRowItem == null)
+            {
+                return false;
+            }
+            else
+            {
+                return this.Equals(OtherRowItem);
+            }
+        }
+
+        //Compare by FormattedExpiration Asc
+        public int CompareTo(RowItem OtherRowItem)
+        {
+            // A null value means that this object is greater.
+            if (OtherRowItem == null)
+                return 1;
+
+            else
+                return this.FormattedExpiration.CompareTo(OtherRowItem.FormattedExpiration);
+        }
+
+        public override int GetHashCode()
+        {
+            return Id;
         }
     }
 }
