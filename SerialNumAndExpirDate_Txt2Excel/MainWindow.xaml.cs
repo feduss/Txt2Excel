@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -25,13 +26,22 @@ namespace BarCodeDescrExpirDate_Txt2Excel
             if(FileStream != null)
             {
                 StatusLabel.Content = "Status: lettura dati...";
-                List<String> contents = ReadLines(FileStream);
-                //Convert the lines into a list of RowItem and sort them
-                StatusLabel.Content = "Status: ordinamento dati...";
-                List<RowItem> Rows = SortDatas(GetDatas(contents));
-                StatusLabel.Content = "Status: inserimento dati (0%)...";
-                //Create the excel file
-                CreateExcelFile(Rows, FileName.Replace(".txt", ".xlsx"));
+                new Thread(() =>
+                {
+                    Thread.CurrentThread.IsBackground = true;
+
+                    List<String> contents = ReadLines(FileStream);
+                    //Convert the lines into a list of RowItem and sort them
+                    StatusLabel.Dispatcher.Invoke(() => {
+                    StatusLabel.Content = "Status: ordinamento dati...";
+                    });                    
+                    List<RowItem> Rows = SortDatas(GetDatas(contents));
+                    StatusLabel.Dispatcher.Invoke(() => {
+                        StatusLabel.Content = "Status: inserimento dati (0%)...";
+                    });
+                    //Create the excel file
+                    CreateExcelFile(Rows, FileName.Replace(".txt", ".xlsx"));
+                }).Start();
             }
         }
 
@@ -82,8 +92,6 @@ namespace BarCodeDescrExpirDate_Txt2Excel
             }
             return contents;
         }
-
-
 
         private static List<RowItem> GetDatas(List<string> contents)
         {
@@ -168,13 +176,19 @@ namespace BarCodeDescrExpirDate_Txt2Excel
                     ew.Write(row.Description, 2, i);
                     ew.Write(row.Expiration, 3, i);
                     int Percentage = ((i - 2) / rows.Count) * 100;
-                    StatusLabel.Content = "Status: lettura dati (" + Percentage + "%)...";
+                    StatusLabel.Dispatcher.Invoke(() => {
+                        StatusLabel.Content = "Status: lettura dati (" + Percentage + "%)...";
+                    });
+                    
                     i++;
                 }
 
                 ew.Save();
 
-                StatusLabel.Content = "Status: file excel salvato nella stessa cartella del txt!";
+                StatusLabel.Dispatcher.Invoke(() =>
+                {
+                    StatusLabel.Content = "Status: file excel salvato nella stessa cartella del txt!";
+                });
             }
             catch (Exception ex)
             {
