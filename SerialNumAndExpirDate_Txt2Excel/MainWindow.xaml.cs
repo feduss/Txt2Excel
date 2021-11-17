@@ -11,8 +11,8 @@ namespace BarCodeDescrExpirDate_Txt2Excel
 {
     public partial class MainWindow : Window
     {
-        readonly Label StatusLabel;
-        String FileName;
+        private readonly Label StatusLabel;
+        private String FileName;
         public MainWindow()
         {
             InitializeComponent();
@@ -34,13 +34,15 @@ namespace BarCodeDescrExpirDate_Txt2Excel
                     //Convert the lines into a list of RowItem and sort them
                     StatusLabel.Dispatcher.Invoke(() => {
                     StatusLabel.Content = "Status: ordinamento dati...";
-                    });                    
-                    List<RowItem> Rows = SortDatas(GetDatas(contents));
+                    });
+                    List<RowItem> Rows, RowsNotParsable;
+                    GetDatas(contents, out Rows, out RowsNotParsable);
+                    SortDatas(Rows);
                     StatusLabel.Dispatcher.Invoke(() => {
                         StatusLabel.Content = "Status: inserimento dati (0%)...";
                     });
                     //Create the excel file
-                    CreateExcelFile(Rows, FileName.Replace(".txt", ".xlsx"));
+                    CreateExcelFile(Rows, RowsNotParsable, FileName.Replace(".txt", ".xlsx"));
                 }).Start();
             }
         }
@@ -93,9 +95,10 @@ namespace BarCodeDescrExpirDate_Txt2Excel
             return contents;
         }
 
-        private static List<RowItem> GetDatas(List<string> contents)
+        private static void GetDatas(List<string> contents, out List<RowItem> Rows, out List<RowItem> RowsNotParsable)
         {
-            List<RowItem> Rows = new List<RowItem>();
+            Rows = new List<RowItem>();
+            RowsNotParsable = new List<RowItem>();
             CultureInfo cultureInfo = new CultureInfo("it-IT");
             int i = 0;
             foreach (String Row in contents)
@@ -104,12 +107,19 @@ namespace BarCodeDescrExpirDate_Txt2Excel
                 //If the file is formatted correctly
                 if (Cols.Length > 5)
                 {
-                    //Se la scadenza ha solo mese e anno, aggiungo l'ultimo giorno di quel mese
+
                     if (Cols[4].Length == 4)
                     {
                         int Month = Int32.Parse(Cols[4].Substring(0, 2));
                         int Year = Int32.Parse("20" + Cols[4].Substring(2, 2));
                         Cols[4] = DateTime.DaysInMonth(Year, Month) + Cols[4];
+                    }
+                    //If the day has only one digit, add a zero before
+                    //I can do this because i'm at 100% that the month has always 2 digits
+                    //because i know the structure of the file txt
+                    else if (Cols[4].Length == 5)
+                    {
+                        Cols[4] = "0" + Cols[4];
                     }
                     //If the expiration date is in the format DDMMYY, convert the month from int to string
                     if (Cols[4].Length == 6)
@@ -117,31 +127,44 @@ namespace BarCodeDescrExpirDate_Txt2Excel
                         String Day = Cols[4].Substring(0, 2);
                         String Month = Cols[4].Substring(2, 2);
                         String Year = Cols[4].Substring(4, 2);
-                        DateTime FormattedExpiration = DateTime.ParseExact(Cols[4], "ddMMyy", cultureInfo);
-
-                        switch (Month)
+                        try
                         {
-                            case "01": Month = "Gennaio"; break;
-                            case "02": Month = "Febbraio"; break;
-                            case "03": Month = "Marzo"; break;
-                            case "04": Month = "Aprile"; break;
-                            case "05": Month = "Maggio"; break;
-                            case "06": Month = "Giugno"; break;
-                            case "07": Month = "Luglio"; break;
-                            case "08": Month = "Agosto"; break;
-                            case "09": Month = "Settembre"; break;
-                            case "10": Month = "Ottobre"; break;
-                            case "11": Month = "Novembre"; break;
-                            case "12": Month = "Dicembre"; break;
+                            DateTime FormattedExpiration = DateTime.ParseExact(Cols[4], "ddMMyy", cultureInfo);
+                            switch (Month)
+                            {
+                                case "01": Month = "Gennaio"; break;
+                                case "02": Month = "Febbraio"; break;
+                                case "03": Month = "Marzo"; break;
+                                case "04": Month = "Aprile"; break;
+                                case "05": Month = "Maggio"; break;
+                                case "06": Month = "Giugno"; break;
+                                case "07": Month = "Luglio"; break;
+                                case "08": Month = "Agosto"; break;
+                                case "09": Month = "Settembre"; break;
+                                case "10": Month = "Ottobre"; break;
+                                case "11": Month = "Novembre"; break;
+                                case "12": Month = "Dicembre"; break;
+                            }
+
+                            Rows.Add(new RowItem(i, Cols[0], Cols[2], Day + " " + Month + " " + Year, FormattedExpiration));
+                        }
+                        //Errori di parsing
+                        catch (FormatException ex)
+                        {
+                            RowsNotParsable.Add(new RowItem(i, Cols[0], Cols[2], Cols[4]));
                         }
 
-                        Rows.Add(new RowItem(i, Cols[0], Cols[2], Day + " " + Month + " " + Year, FormattedExpiration));
                     }
-                    i++;
+                    //Errori di parsing
+                    else
+                    {
+                        RowsNotParsable.Add(new RowItem(i, Cols[0], Cols[2], Cols[4]));
+                    }
                 }
-            }
+                i++;
 
-            return Rows;
+
+            }
         }
 
         private List<RowItem> SortDatas(List<RowItem> RowItems)
@@ -150,7 +173,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
             return RowItems;
         }
 
-        private void CreateExcelFile(List<RowItem> rows, String FileName)
+        private void CreateExcelFile(List<RowItem> Rows, List<RowItem> RowsNotParsable, String FileName)
         {
             try
             {
@@ -170,16 +193,32 @@ namespace BarCodeDescrExpirDate_Txt2Excel
 
                 int i = 2;
                 //Populate cells
-                foreach (RowItem row in rows)
+                foreach (RowItem row in Rows)
                 {
                     ew.Write(row.BarCode, 1, i);
                     ew.Write(row.Description, 2, i);
                     ew.Write(row.Expiration, 3, i);
-                    int Percentage = ((i - 2) / rows.Count) * 100;
+                    int Percentage = ((i - 2) / Rows.Count) * 100;
                     StatusLabel.Dispatcher.Invoke(() => {
                         StatusLabel.Content = "Status: lettura dati (" + Percentage + "%)...";
                     });
                     
+                    i++;
+                }
+
+                i++; //Empty row
+
+                //Populate cells with not parsable datas
+                foreach (RowItem row in RowsNotParsable)
+                {
+                    ew.Write(row.BarCode, 1, i);
+                    ew.Write(row.Description, 2, i);
+                    ew.Write(row.Expiration, 3, i);
+                    int Percentage = ((i - 2) / Rows.Count) * 100;
+                    StatusLabel.Dispatcher.Invoke(() => {
+                        StatusLabel.Content = "Status: lettura dati con scadenze non valide (" + Percentage + "%)...";
+                    });
+
                     i++;
                 }
 

@@ -10,6 +10,15 @@ namespace BarCodeDescrExpirDate_Txt2Excel
         public String Expiration { get; set; }
         public DateTime FormattedExpiration { get; set; }
 
+        //Not parsable datas
+        public RowItem(int Id, string BarCode, string Description, string Expiration)
+        {
+            this.Id = Id;
+            this.BarCode = BarCode;
+            this.Description = Description;
+            this.Expiration = Expiration;
+        }
+
         public RowItem(int Id, string BarCode, string Description, string Expiration, DateTime FormattedExpiration)
         {
             this.Id = Id;
