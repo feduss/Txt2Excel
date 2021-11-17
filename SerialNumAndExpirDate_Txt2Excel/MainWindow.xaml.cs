@@ -83,6 +83,59 @@ namespace BarCodeDescrExpirDate_Txt2Excel
             return contents;
         }
 
+
+
+        private static List<RowItem> GetDatas(List<string> contents)
+        {
+            List<RowItem> Rows = new List<RowItem>();
+            CultureInfo cultureInfo = new CultureInfo("it-IT");
+            int i = 0;
+            foreach (String Row in contents)
+            {
+                String[] Cols = Row.Split(";");
+                //If the file is formatted correctly
+                if (Cols.Length > 5)
+                {
+                    //Se la scadenza ha solo mese e anno, aggiungo l'ultimo giorno di quel mese
+                    if (Cols[4].Length == 4)
+                    {
+                        int Month = Int32.Parse(Cols[4].Substring(0, 2));
+                        int Year = Int32.Parse("20" + Cols[4].Substring(2, 2));
+                        Cols[4] = DateTime.DaysInMonth(Year, Month) + Cols[4];
+                    }
+                    //If the expiration date is in the format DDMMYY, convert the month from int to string
+                    if (Cols[4].Length == 6)
+                    {
+                        String Day = Cols[4].Substring(0, 2);
+                        String Month = Cols[4].Substring(2, 2);
+                        String Year = Cols[4].Substring(4, 2);
+                        DateTime FormattedExpiration = DateTime.ParseExact(Cols[4], "ddMMyy", cultureInfo);
+
+                        switch (Month)
+                        {
+                            case "01": Month = "Gennaio"; break;
+                            case "02": Month = "Febbraio"; break;
+                            case "03": Month = "Marzo"; break;
+                            case "04": Month = "Aprile"; break;
+                            case "05": Month = "Maggio"; break;
+                            case "06": Month = "Giugno"; break;
+                            case "07": Month = "Luglio"; break;
+                            case "08": Month = "Agosto"; break;
+                            case "09": Month = "Settembre"; break;
+                            case "10": Month = "Ottobre"; break;
+                            case "11": Month = "Novembre"; break;
+                            case "12": Month = "Dicembre"; break;
+                        }
+
+                        Rows.Add(new RowItem(i, Cols[0], Cols[2], Day + " " + Month + " " + Year, FormattedExpiration));
+                    }
+                    i++;
+                }
+            }
+
+            return Rows;
+        }
+
         private List<RowItem> SortDatas(List<RowItem> RowItems)
         {
             RowItems.Sort();
@@ -138,50 +191,6 @@ namespace BarCodeDescrExpirDate_Txt2Excel
 
             StatusLabel.Content = "Status: si è verificato un errore.";
             MessageBox.Show(errorMessage);
-        }
-
-        private static List<RowItem> GetDatas(List<string> contents)
-        {
-            List<RowItem> Rows = new List<RowItem>();
-            CultureInfo cultureInfo = new CultureInfo("it-IT");
-            int i = 0;
-            foreach(String Row in contents)
-            {
-                String[] Cols = Row.Split(";");
-                //If the file is formatted correctly
-                if(Cols.Length > 5)
-                {
-                    //If the expiration date is in the format DDMMYY, convert the month from int to string
-                    if(Cols[4].Length == 6)
-                    {
-                        String Day = Cols[4].Substring(0, 2);
-                        String Month = Cols[4].Substring(2, 2);
-                        String Year = Cols[4].Substring(4, 2);
-                        DateTime FormattedExpiration = DateTime.ParseExact(Cols[4], "ddMMyy", cultureInfo);
-
-                        switch (Month)
-                        {
-                            case "01": Month = "Gennaio"; break;
-                            case "02": Month = "Febbraio"; break;
-                            case "03": Month = "Marzo"; break;
-                            case "04": Month = "Aprile"; break;
-                            case "05": Month = "Maggio"; break;
-                            case "06": Month = "Giugno"; break;
-                            case "07": Month = "Luglio"; break;
-                            case "08": Month = "Agosto"; break;
-                            case "09": Month = "Settembre"; break;
-                            case "10": Month = "Ottobre"; break;
-                            case "11": Month = "Novembre"; break;
-                            case "12": Month = "Dicembre"; break;
-                        }
-
-                        Rows.Add(new RowItem(i, Cols[0], Cols[2], Day + " " + Month + " " + Year, FormattedExpiration));
-                    }
-                    i++;
-                }
-            }
-
-            return Rows;
         }
 
     }
