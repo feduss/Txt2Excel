@@ -12,7 +12,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
     public partial class MainWindow : Window
     {
         private readonly Label StatusLabel;
-        private String FileName;
+        private String InputPath;
         public MainWindow()
         {
             InitializeComponent();
@@ -21,29 +21,43 @@ namespace BarCodeDescrExpirDate_Txt2Excel
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Stream FileStream = SelectFile();
-
-            if(FileStream != null)
+            try
             {
-                StatusLabel.Content = "Status: lettura dati...";
-                new Thread(() =>
-                {
-                    Thread.CurrentThread.IsBackground = true;
+                Stream FileStream = SelectFile();
 
-                    List<String> contents = ReadLines(FileStream);
-                    //Convert the lines into a list of RowItem and sort them
-                    StatusLabel.Dispatcher.Invoke(() => {
-                    StatusLabel.Content = "Status: ordinamento dati...";
-                    });
-                    List<RowItem> Rows, RowsNotParsable;
-                    GetDatas(contents, out Rows, out RowsNotParsable);
-                    SortDatas(Rows);
-                    StatusLabel.Dispatcher.Invoke(() => {
-                        StatusLabel.Content = "Status: inserimento dati (0%)...";
-                    });
-                    //Create the excel file
-                    CreateExcelFile(Rows, RowsNotParsable, FileName.Replace(".txt", ".xlsx"));
-                }).Start();
+                if (FileStream != null)
+                {
+                    StatusLabel.Content = "Status: lettura dati...";
+                    new Thread(() =>
+                    {
+                        Thread.CurrentThread.IsBackground = true;
+
+                        List<String> contents = ReadLines(FileStream);
+                        //Convert the lines into a list of RowItem and sort them
+                        StatusLabel.Dispatcher.Invoke(() => {
+                            StatusLabel.Content = "Status: ordinamento dati...";
+                        });
+                        List<RowItem> Rows, RowsNotParsable;
+                        GetDatas(contents, out Rows, out RowsNotParsable);
+                        SortDatas(Rows);
+                        StatusLabel.Dispatcher.Invoke(() => {
+                            StatusLabel.Content = "Status: inserimento dati (0%)...";
+                        });
+                        //Create the excel file
+                        String BaseFileName = "Scadenze prodotti";
+                        String[] TempArray = InputPath.Split("\\");
+                        String OutputPath = InputPath.Replace(TempArray[TempArray.Length - 1], "") + BaseFileName;
+                        if (!Directory.Exists(OutputPath))
+                        {
+                            Directory.CreateDirectory(OutputPath);
+                        }
+                        CreateExcelFile(Rows, RowsNotParsable, OutputPath);
+                    }).Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                PrintError(ex);
             }
         }
 
@@ -62,7 +76,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
             if (result == true)
             {
                 StatusLabel.Content = "Stato: elaborazione file " + dlg.FileName;
-                this.FileName = dlg.FileName;
+                this.InputPath = dlg.FileName;
                 return dlg.OpenFile();
             }
             else
@@ -107,7 +121,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
                 //If the file is formatted correctly
                 if (Cols.Length > 5)
                 {
-
+                    //If the day has only month and year
                     if (Cols[4].Length == 4)
                     {
                         int Month = Int32.Parse(Cols[4].Substring(0, 2));
@@ -146,19 +160,19 @@ namespace BarCodeDescrExpirDate_Txt2Excel
                                 case "12": Month = "Dicembre"; break;
                             }
 
-                            Rows.Add(new RowItem(i, Cols[0], Cols[2], Day + " " + Month + " " + Year, FormattedExpiration));
+                            Rows.Add(new RowItem(i, Cols[0], Cols[2], Day + " " + Month + " " + Year, FormattedExpiration, Month, Year));
                         }
                         //Errori di parsing
                         catch (FormatException ex)
                         {
-                            RowsNotParsable.Add(new RowItem(i, Cols[0], Cols[2], Cols[4]));
+                            RowsNotParsable.Add(new RowItem(i, Cols[0], Cols[2], Cols[4], Month, Year));
                         }
 
                     }
                     //Errori di parsing
                     else
                     {
-                        RowsNotParsable.Add(new RowItem(i, Cols[0], Cols[2], Cols[4]));
+                        RowsNotParsable.Add(new RowItem(i, Cols[0], Cols[2], Cols[4], "Error", "Error"));
                     }
                 }
                 i++;
@@ -173,40 +187,80 @@ namespace BarCodeDescrExpirDate_Txt2Excel
             return RowItems;
         }
 
-        private void CreateExcelFile(List<RowItem> Rows, List<RowItem> RowsNotParsable, String FileName)
+        private void CreateExcelFile(List<RowItem> Rows, List<RowItem> RowsNotParsable, String OutputPath)
         {
+            //I can't create multiple sheet in one excel file because it requires SwiftExcelPro
+            //So, i create multiple excel file
             try
             {
-                //Create a table
-                var sheet = new Sheet
+                ExcelWriter ew = null;
+                int i = 2;
+                int j = 2;
+                String prevRowMonthYear = null;
+                //Populate cells
+                foreach (RowItem row in Rows)
                 {
-                    Name = "Prodotti",
+                    var rowMonthYear = row.Month + "" + row.Year;
+                    //Create a new sheet if month and year change
+                    if (prevRowMonthYear == null || !rowMonthYear.Equals(prevRowMonthYear))
+                    {
+                        if(ew != null)
+                        {
+                            ew.Save();
+                        }
+                        //Create a table
+                        Sheet newSheet = new Sheet
+                        {
+                            Name = rowMonthYear,
+                            ColumnsWidth = new List<double> { 10, 60, 70, 10 }
+                        };
+
+                        String OPath = OutputPath + "\\" + rowMonthYear + ".xlsx";
+                        ew = new ExcelWriter(OPath, newSheet);
+
+                        //Header
+                        ew.Write("Codice a barre", 1, 1);
+                        ew.Write("Descrizione", 2, 1);
+                        ew.Write("Scadenza", 3, 1);
+
+                        i = 2;
+                    }
+                    
+                    if (ew != null)
+                    {
+                        prevRowMonthYear = rowMonthYear;
+                        StatusLabel.Dispatcher.Invoke(() => {
+                            StatusLabel.Content = "Status: lettura dati con scadenza " + rowMonthYear + "...";
+                        });
+                        WriteRow(Rows, ew, i, j, row);
+                    }
+
+                    j++;
+
+                    i++;
+                }
+
+                if (ew != null)
+                {
+                    ew.Save();
+                }
+
+                //Create a table
+                Sheet errorSheet = new Sheet
+                {
+                    Name = "Errori",
                     ColumnsWidth = new List<double> { 10, 60, 70, 10 }
                 };
 
-                var ew = new ExcelWriter(FileName, sheet);
+                String Path = OutputPath + "\\" + "DatiNonValidi.xlsx";
+                ew = new ExcelWriter(Path, errorSheet);
 
                 //Header
                 ew.Write("Codice a barre", 1, 1);
                 ew.Write("Descrizione", 2, 1);
                 ew.Write("Scadenza", 3, 1);
 
-                int i = 2;
-                //Populate cells
-                foreach (RowItem row in Rows)
-                {
-                    ew.Write(row.BarCode, 1, i);
-                    ew.Write(row.Description, 2, i);
-                    ew.Write(row.Expiration, 3, i);
-                    int Percentage = ((i - 2) / Rows.Count) * 100;
-                    StatusLabel.Dispatcher.Invoke(() => {
-                        StatusLabel.Content = "Status: lettura dati (" + Percentage + "%)...";
-                    });
-                    
-                    i++;
-                }
-
-                i++; //Empty row
+                i = 2;
 
                 //Populate cells with not parsable datas
                 foreach (RowItem row in RowsNotParsable)
@@ -214,9 +268,9 @@ namespace BarCodeDescrExpirDate_Txt2Excel
                     ew.Write(row.BarCode, 1, i);
                     ew.Write(row.Description, 2, i);
                     ew.Write(row.Expiration, 3, i);
-                    int Percentage = ((i - 2) / Rows.Count) * 100;
+                    //int Percentage = ((i - 2) / Rows.Count) * 100;
                     StatusLabel.Dispatcher.Invoke(() => {
-                        StatusLabel.Content = "Status: lettura dati con scadenze non valide (" + Percentage + "%)...";
+                        StatusLabel.Content = "Status: lettura dati con scadenze non valide...";
                     });
 
                     i++;
@@ -226,13 +280,25 @@ namespace BarCodeDescrExpirDate_Txt2Excel
 
                 StatusLabel.Dispatcher.Invoke(() =>
                 {
-                    StatusLabel.Content = "Status: file excel salvato nella stessa cartella del txt!";
+                    StatusLabel.Content = "Status: file excel salvato/i nella cartella: " + OutputPath;
                 });
             }
             catch (Exception ex)
             {
                 PrintError(ex);
             }
+        }
+
+        private void WriteRow(List<RowItem> Rows, ExcelWriter ew, int i, int j, RowItem row)
+        {
+            ew.Write(row.BarCode, 1, i);
+            ew.Write(row.Description, 2, i);
+            ew.Write(row.Expiration, 3, i);
+            int Percentage = ((j - 2) / Rows.Count) * 100;
+            StatusLabel.Dispatcher.Invoke(() =>
+            {
+                StatusLabel.Content = "Status: lettura dati (" + Percentage + "%)...";
+            });
         }
 
         private void PrintError(Exception ex)
@@ -242,8 +308,11 @@ namespace BarCodeDescrExpirDate_Txt2Excel
             errorMessage = String.Concat(errorMessage, " Line: ");
             errorMessage = String.Concat(errorMessage, ex.Source);
 
-            StatusLabel.Content = "Status: si è verificato un errore.";
-            MessageBox.Show(errorMessage);
+            StatusLabel.Dispatcher.Invoke(() =>
+            {
+                StatusLabel.Content = "Status: si è verificato un errore: \n\n" + errorMessage;
+                //MessageBox.Show(errorMessage);
+            });
         }
 
     }
