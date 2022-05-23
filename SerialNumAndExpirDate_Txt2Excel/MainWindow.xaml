@@ -5,24 +5,64 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SerialNumAndExpirDate_Txt2Excel"
         mc:Ignorable="d"
-        Title="ExtractFromTxt by feduss - v1.0.3" Height="450" Width="800">
-    <Grid>
+        Title="ExtractFromTxt by feduss - v1.0.4" Height="450" Width="400">
+    <Grid Background="LightGray">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="299*"/>
+            <ColumnDefinition Width="101*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
-        <Label Grid.Row="0" Content="Benvenuto! Quest'app è stata sviluppata per estrarre codice a barre, descrizione di un prodotto e relativa scadenza da un particolare file txt."/>
-        <Label Grid.Row="1" Content="I dati ottenuti verranno quindi convertiti in un file excel, per una più facile visualizzazione."/>
-        <Label Grid.Row="2" Content="E' importante che i dati nel file txt siano separati da un punto e virgola."/>
-        <Label Grid.Row="3" Content="Il codice a barre dev'essere in 1° posizione, la descrizione in 3° e la scadenza in 5°, altrimenti il programma non funzionerà correttamente."/>
-        <Label Grid.Row="4" Content="Clicca sul pulsante seguente per selezionare un file txt ed iniziare il processo di conversione:"/>
-        <Button Grid.Row="5" Content="SELEZIONA FILE TXT" Width="150" Margin="10" Padding="10" Click="Button_Click"/>
-        <Label x:Name="StatusLabel_" Grid.Row="6" Content="Stato: in attesa di un file." HorizontalContentAlignment="Center"/>
+
+        <Border x:Name="roundBorder" BorderThickness="0" CornerRadius="16" Margin="8,8,8,40" Background="White" Grid.ColumnSpan="2">
+            <Grid Grid.Row="0" Background="Transparent">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.Resources>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="CornerRadius" Value="160"/>
+                    </Style>
+                </Grid.Resources>
+                <Label Grid.Row="0" HorizontalContentAlignment="Center">
+                    <TextBlock TextWrapping="Wrap" Text="Benvenuto!"/>
+                </Label>
+                <Label Grid.Row="1">
+                    <TextBlock TextWrapping="Wrap" Text="&#8226; Quest'app è stata sviluppata per estrarre codice a barre di un prodotto, la sua descrizione e scadenza da un file txt con una struttura specifica. Una riga d'esempio è la seguente:"/>
+                </Label>
+                <Label Grid.Row="2" HorizontalContentAlignment="Center">
+                    <TextBlock TextWrapping="Wrap" Text="1234567891234;123456;SPAGHETTI N°3;1;121021;I;0;0;0;1234;1;1234"/>
+                </Label>
+                <Label Grid.Row="3">
+                    <TextBlock TextWrapping="Wrap" Text="&#8226; I dati ottenuti verranno quindi convertiti in uno o più file excel (uno per ogni coppia mese-anno identificati nelle scadenze)."/>
+                </Label>
+                <Label Grid.Row="4">
+                    <TextBlock TextWrapping="Wrap" Text="&#8226; E' importante che i dati nel file txt siano separati da un punto e virgola."/>
+                </Label>
+                <Label Grid.Row="5">
+                    <TextBlock TextWrapping="Wrap" Text="&#8226; Il codice a barre dev'essere in 1° posizione, la descrizione in 3° e la scadenza in 5°, altrimenti il programma non funzionerà correttamente."/>
+                </Label>
+                <Label Grid.Row="6">
+                    <TextBlock TextWrapping="Wrap" Text="&#8226; Per iniziare il processo di conversione, clicca sul pulsante seguente per selezionare un file txt"/>
+                </Label>
+                <Button Grid.Row="7" Content="SELEZIONA FILE TXT" Width="150" Margin="10" Padding="10" Foreground="White" Background="#6495ED" Click="Button_Click">
+                    <Button.Resources>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="CornerRadius" Value="16"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                <Label x:Name="StatusLabel_" Grid.Row="8" Content="Stato: in attesa di un file." HorizontalContentAlignment="Center"/>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
