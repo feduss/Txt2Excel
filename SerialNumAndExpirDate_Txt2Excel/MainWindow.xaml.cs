@@ -11,12 +11,12 @@ namespace BarCodeDescrExpirDate_Txt2Excel
 {
     public partial class MainWindow : Window
     {
-        private readonly Label StatusLabel;
+        private readonly TextBlock StatusLabel;
         private String InputPath;
         public MainWindow()
         {
             InitializeComponent();
-            StatusLabel = (Label)this.FindName("StatusLabel_");
+            StatusLabel = (TextBlock)this.FindName("StatusLabel_");
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -27,7 +27,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
 
                 if (FileStream != null)
                 {
-                    StatusLabel.Content = "Status: lettura dati...";
+                    StatusLabel.Text = "Status: lettura dati...";
                     new Thread(() =>
                     {
                         Thread.CurrentThread.IsBackground = true;
@@ -35,13 +35,13 @@ namespace BarCodeDescrExpirDate_Txt2Excel
                         List<String> contents = ReadLines(FileStream);
                         //Convert the lines into a list of RowItem and sort them
                         StatusLabel.Dispatcher.Invoke(() => {
-                            StatusLabel.Content = "Status: ordinamento dati...";
+                            StatusLabel.Text = "Status: ordinamento dati...";
                         });
                         List<RowItem> Rows, RowsNotParsable;
                         GetDatas(contents, out Rows, out RowsNotParsable);
                         SortDatas(Rows);
                         StatusLabel.Dispatcher.Invoke(() => {
-                            StatusLabel.Content = "Status: inserimento dati (0%)...";
+                            StatusLabel.Text = "Status: inserimento dati (0%)...";
                         });
                         //Create the excel file
                         String BaseFileName = "Scadenze prodotti";
@@ -75,13 +75,13 @@ namespace BarCodeDescrExpirDate_Txt2Excel
             Nullable<bool> result = dlg.ShowDialog();
             if (result == true)
             {
-                StatusLabel.Content = "Stato: elaborazione file " + dlg.FileName;
+                StatusLabel.Text = "Stato: elaborazione file " + dlg.FileName;
                 this.InputPath = dlg.FileName;
                 return dlg.OpenFile();
             }
             else
             {
-                StatusLabel.Content = "Operazione annullata/fallita";
+                StatusLabel.Text = "Operazione annullata/fallita";
 
                 return null;
             }
@@ -230,7 +230,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
                     {
                         prevRowMonthYear = rowMonthYear;
                         StatusLabel.Dispatcher.Invoke(() => {
-                            StatusLabel.Content = "Status: lettura dati con scadenza " + rowMonthYear + "...";
+                            StatusLabel.Text = "Status: lettura dati con scadenza " + rowMonthYear + "...";
                         });
                         WriteRow(Rows, ew, i, j, row);
                     }
@@ -270,7 +270,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
                     ew.Write(row.Expiration, 3, i);
                     //int Percentage = ((i - 2) / Rows.Count) * 100;
                     StatusLabel.Dispatcher.Invoke(() => {
-                        StatusLabel.Content = "Status: lettura dati con scadenze non valide...";
+                        StatusLabel.Text = "Status: lettura dati con scadenze non valide...";
                     });
 
                     i++;
@@ -280,7 +280,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
 
                 StatusLabel.Dispatcher.Invoke(() =>
                 {
-                    StatusLabel.Content = "Status: file excel salvato/i nella cartella: " + OutputPath;
+                    StatusLabel.Text = "Status: file excel salvato/i nella cartella: " + OutputPath;
                 });
             }
             catch (Exception ex)
@@ -297,7 +297,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
             int Percentage = ((j - 2) / Rows.Count) * 100;
             StatusLabel.Dispatcher.Invoke(() =>
             {
-                StatusLabel.Content = "Status: lettura dati (" + Percentage + "%)...";
+                StatusLabel.Text = "Status: lettura dati (" + Percentage + "%)...";
             });
         }
 
@@ -310,7 +310,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
 
             StatusLabel.Dispatcher.Invoke(() =>
             {
-                StatusLabel.Content = "Status: si è verificato un errore: \n\n" + errorMessage;
+                StatusLabel.Text = "Status: si è verificato un errore: \n\n" + errorMessage;
                 //MessageBox.Show(errorMessage);
             });
         }
