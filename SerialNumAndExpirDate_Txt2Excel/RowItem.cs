@@ -2,7 +2,7 @@
 
 namespace BarCodeDescrExpirDate_Txt2Excel
 {
-    internal class RowItem : IEquatable<RowItem>, IComparable<RowItem>
+    internal class RowWithDate : IEquatable<RowWithDate>, IComparable<RowWithDate>
     {
         public int Id { get; set; }
         public String BarCode { get; set; }
@@ -13,7 +13,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
         public String Year { get; set; }
 
         //Not parsable datas
-        public RowItem(int Id, string BarCode, string Description, string Expiration, string Month, String Year)
+        public RowWithDate(int Id, string BarCode, string Description, string Expiration, string Month, String Year)
         {
             this.Id = Id;
             this.BarCode = BarCode;
@@ -23,7 +23,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
             this.Year = Year;
         }
 
-        public RowItem(int Id, string BarCode, string Description, string Expiration, DateTime FormattedExpiration, string Month, String Year)
+        public RowWithDate(int Id, string BarCode, string Description, string Expiration, DateTime FormattedExpiration, string Month, String Year)
         {
             this.Id = Id;
             this.BarCode = BarCode;
@@ -35,7 +35,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
         }
 
 
-        public bool Equals(RowItem OtherRowItem)
+        public bool Equals(RowWithDate OtherRowItem)
         {
             if (this.BarCode.Equals(OtherRowItem.BarCode) &&
                    this.Description.Equals(OtherRowItem.Description) &&
@@ -56,7 +56,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
             {
                 return false;
             }
-            RowItem OtherRowItem = Other as RowItem;
+            RowWithDate OtherRowItem = Other as RowWithDate;
             if (OtherRowItem == null)
             {
                 return false;
@@ -68,7 +68,7 @@ namespace BarCodeDescrExpirDate_Txt2Excel
         }
 
         //Compare by FormattedExpiration Asc
-        public int CompareTo(RowItem OtherRowItem)
+        public int CompareTo(RowWithDate OtherRowItem)
         {
             // A null value means that this object is greater.
             if (OtherRowItem == null)

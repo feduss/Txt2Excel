@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SerialNumAndExpirDate_Txt2Excel"
         mc:Ignorable="d"
-        Title="ExtractFromTxt by feduss - v1.0.4" Height="450" Width="400">
+        Title="ExtractFromTxt by feduss - v1.1.0" Height="480" Width="400">
     <Grid Background="LightGray">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="299*"/>
@@ -27,43 +27,36 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.Resources>
                     <Style TargetType="{x:Type Border}">
                         <Setter Property="CornerRadius" Value="160"/>
                     </Style>
                 </Grid.Resources>
-                <Label Grid.Row="0" HorizontalContentAlignment="Center">
-                    <TextBlock TextWrapping="Wrap" Text="Benvenuto!"/>
-                </Label>
-                <Label Grid.Row="1">
-                    <TextBlock TextWrapping="Wrap" Text="&#8226; Quest'app è stata sviluppata per estrarre codice a barre di un prodotto, la sua descrizione e scadenza da un file txt con una struttura specifica. Una riga d'esempio è la seguente:"/>
-                </Label>
-                <Label Grid.Row="2" HorizontalContentAlignment="Center">
-                    <TextBlock TextWrapping="Wrap" Text="1234567891234;123456;SPAGHETTI N°3;1;121021;I;0;0;0;1234;1;1234"/>
-                </Label>
-                <Label Grid.Row="3">
-                    <TextBlock TextWrapping="Wrap" Text="&#8226; I dati ottenuti verranno quindi convertiti in uno o più file excel (uno per ogni coppia mese-anno identificati nelle scadenze)."/>
-                </Label>
-                <Label Grid.Row="4">
-                    <TextBlock TextWrapping="Wrap" Text="&#8226; E' importante che i dati nel file txt siano separati da un punto e virgola."/>
-                </Label>
-                <Label Grid.Row="5">
-                    <TextBlock TextWrapping="Wrap" Text="&#8226; Il codice a barre dev'essere in 1° posizione, la descrizione in 3° e la scadenza in 5°, altrimenti il programma non funzionerà correttamente."/>
-                </Label>
-                <Label Grid.Row="6">
-                    <TextBlock TextWrapping="Wrap" Text="&#8226; Per iniziare il processo di conversione, clicca sul pulsante seguente per selezionare un file txt"/>
-                </Label>
-                <Button Grid.Row="7" Content="SELEZIONA FILE TXT" Width="150" Margin="10" Padding="10" Foreground="White" Background="#6495ED" Click="Button_Click">
+                <TextBlock Grid.Row="0" Margin="8" TextAlignment="Center" TextWrapping="Wrap" Text="Benvenuto!"/>
+                <TextBlock Grid.Row="1" Margin="8" TextWrapping="Wrap" Text="&#8226; Quest'app estrae le colonne di un file excel e le salva in un nuovo file."/>
+                <TextBlock Grid.Row="2" Margin="8" TextWrapping="Wrap" Text="&#8226; Inserisci qui sotto il numero delle colonne, inserendo una virgola tra i numeri (es.: 1,5,6,8)"/>
+                <TextBox Grid.Row="3" Margin="8" x:Name="ColumnsIndicesTB_" TextChanged="onColumnsIndicesTextChanged"/>
+                <TextBlock Grid.Row="4" Margin="8" TextWrapping="Wrap" Text="&#8226; Inserisci il titolo di ogni colonna, separati da una virgola."/>
+                <TextBox Grid.Row="5" Margin="8" x:Name="ColumnsNamesTB_" TextChanged="onColumnsNamesTextChanged"/>
+                <TextBlock Grid.Row="6" Margin="8" TextWrapping="Wrap" Text="&#8226; Inserisci il separatore delle colonne (es.: una virgola, o un punto e virgola)"/>
+                <TextBox Grid.Row="7" Margin="8" x:Name="ValueSeparatorTB_" TextChanged="onValueSeparatorTextChanged"/>
+                <TextBlock Grid.Row="8" Margin="8" TextWrapping="Wrap" Text="&#8226; Se il file ha una data (nel formato ddMMyy, ad es.: 082122), e vuoi ordinare i dati del file excel per data, inserisci qui sotto il numero della sua colonna:"/>
+                <TextBox Grid.Row="9" Margin="8" x:Name="DateColumnIndexTB_" TextChanged="onDateColumnTextChanged"/>
+                <TextBlock Grid.Row="10" Margin="8" TextWrapping="Wrap" Text="&#8226; Per iniziare il processo di conversione, clicca sul pulsante seguente per selezionare un file txt"/>
+                <Button Grid.Row="11" Content="SELEZIONA FILE TXT" Width="150" Margin="10" Padding="10" Foreground="White" Background="#6495ED" Click="Button_Click">
                     <Button.Resources>
                         <Style TargetType="{x:Type Border}">
                             <Setter Property="CornerRadius" Value="16"/>
                         </Style>
                     </Button.Resources>
                 </Button>
-                <Label Grid.Row="8" HorizontalContentAlignment="Center">
-                    <TextBlock  x:Name="StatusLabel_" TextWrapping="Wrap" Text="Stato: in attesa di un file."/>
-                </Label>
+                <TextBlock x:Name="StatusLabel_" Grid.Row="12" TextAlignment="Center" TextWrapping="Wrap" Text="Stato: in attesa di un file."/>
             </Grid>
         </Border>
     </Grid>
