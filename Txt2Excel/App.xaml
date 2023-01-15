@@ -1,7 +1,6 @@
-﻿<Application x:Class="SerialNumAndExpirDate_Txt2Excel.App"
+﻿<Application x:Class="Txt2Excel.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:SerialNumAndExpirDate_Txt2Excel"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

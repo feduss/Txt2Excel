@@ -9,7 +9,7 @@ using System.Windows.Controls;
 using System.Linq;
 using System.Windows.Media;
 
-namespace BarCodeDescrExpirDate_Txt2Excel
+namespace Txt2Excel
 {
     public partial class MainWindow : Window
     {
@@ -445,7 +445,12 @@ namespace BarCodeDescrExpirDate_Txt2Excel
         {
             String[] indices = ColumnsIndicesTB.Text.Split(",");
             columnsIndices = new List<int>();
-            if (indices.Count() > 1 && ColumnsIndicesTB.Text.Count() > 1) {
+            if(indices.Contains("0"))
+            {
+                var Text = "Non è possibile inserire 0 come indice. Correggi e riprova.";
+                UpdateStatusLabel(Text, Brushes.Red);
+            }
+            else if (indices.Count() > 1 && ColumnsIndicesTB.Text.Count() > 1) {
                 var Text = "Stato: in attesa di un file.";
                 UpdateStatusLabel(Text, Brushes.Black);
                 foreach (var index in indices)

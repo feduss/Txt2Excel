@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BarCodeDescrExpirDate_Txt2Excel", "SerialNumAndExpirDate_Txt2Excel\BarCodeDescrExpirDate_Txt2Excel.csproj", "{BDEF36D5-874F-48D6-986E-425BDE62E951}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Txt2Excel", "SerialNumAndExpirDate_Txt2Excel\Txt2Excel.csproj", "{BDEF36D5-874F-48D6-986E-425BDE62E951}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

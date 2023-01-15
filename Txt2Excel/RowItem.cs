@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BarCodeDescrExpirDate_Txt2Excel
+namespace Txt2Excel
 {
     internal class RowWithDate : IEquatable<RowWithDate>, IComparable<RowWithDate>
     {
