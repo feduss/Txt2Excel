@@ -503,7 +503,15 @@ namespace Txt2Excel
 
         private void onDateColumnTextChanged(object sender, TextChangedEventArgs args)
         {
-            dateColumnIndex = Int32.Parse(DateColumnIndexTB.Text) - 1;
+            try
+            {
+                dateColumnIndex = Int32.Parse(DateColumnIndexTB.Text) - 1;
+            }
+            catch (Exception ex)
+            {
+                var Text = "Controlla di aver inserito un numero per indicare la colonna della data ";
+                UpdateStatusLabel(Text, Brushes.Red);
+            }
         }
 
     }

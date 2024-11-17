@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="ExtractFromTxt by feduss - v1.1.0" Height="720" Width="400">
+        Title="ExtractFromTxt by feduss - v1.1.1" Height="720" Width="400">
     <Grid Background="LightGray">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="299*"/>
